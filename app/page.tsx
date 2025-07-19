@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import Image from "next/image"
+import { ContactForm } from "@/components/contact-form"
 
 // Performance optimized Intersection Observer hook
 const useIntersectionObserver = (options = {}) => {
@@ -218,45 +219,6 @@ const FloatingShapes = () => {
   )
 }
 
-// Lazy loaded image component
-const LazyImage = ({
-  src,
-  alt,
-  width,
-  height,
-  className,
-  priority = false,
-  ...props
-}: {
-  src: string
-  alt: string
-  width: number
-  height: number
-  className?: string
-  priority?: boolean
-  [key: string]: any
-}) => {
-  const [imageRef, isVisible] = useIntersectionObserver({ threshold: 0.1 })
-  const [isLoaded, setIsLoaded] = useState(false)
-
-  return (
-    <div ref={imageRef} className={`relative overflow-hidden ${className}`} {...props}>
-      {(isVisible || priority) && (
-        <Image
-          src={src || "/placeholder.svg"}
-          alt={alt}
-          width={width}
-          height={height}
-          className={`transition-opacity duration-500 ${isLoaded ? "opacity-100" : "opacity-0"} ${className}`}
-          onLoad={() => setIsLoaded(true)}
-          loading={priority ? "eager" : "lazy"}
-        />
-      )}
-      {!isLoaded && <div className="absolute inset-0 bg-gray-200 dark:bg-gray-700 animate-pulse" />}
-    </div>
-  )
-}
-
 export default function Portfolio() {
   const [darkMode, setDarkMode] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
@@ -362,24 +324,43 @@ export default function Portfolio() {
     [],
   )
 
+
+  useEffect(() => {
+    // Preload critical images
+    const preloadImages = [
+      "/profile.png",
+      "/projects/sherlife.png",
+      "/projects/product-management.png",
+      "/projects/spotify-clone.png",
+    ]
+
+    preloadImages.forEach((src) => {
+      const link = document.createElement("link")
+      link.rel = "preload"
+      link.as = "image"
+      link.href = src
+      document.head.appendChild(link)
+    })
+  }, [])
+
   return (
     <div className={`min-h-screen transition-all duration-500 ${darkMode ? "dark" : ""} relative`}>
       <AnimatedBackground darkMode={darkMode} />
       <FloatingShapes />
 
-      {/* Navigation */}
-      <nav className="fixed top-0 w-full bg-white/90 dark:bg-black/90 backdrop-blur-md z-50 border-b border-gray-200/50 dark:border-gray-800/50 transition-all duration-300">
+            {/* Navigation */}
+      <nav className="fixed top-0 w-full bg-white/90 dark:bg-black/90 backdrop-blur-md z-[100] border-b border-gray-200/50 dark:border-gray-800/50 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="font-bold text-xl text-gray-900 dark:text-white transition-colors duration-300">
+          <div className="flex justify-between items-center h-14 sm:h-16">
+            <div className="font-bold text-lg sm:text-xl text-gray-900 dark:text-white transition-colors duration-300">
               Paviter Singh
             </div>
-            <div className="hidden md:flex space-x-8">
+            <div className="hidden md:flex space-x-6 lg:space-x-8">
               {["Home", "About", "Skills", "Projects", "Certifications", "Contact"].map((item) => (
                 <button
                   key={item}
                   onClick={() => scrollToSection(item.toLowerCase())}
-                  className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all duration-300 hover:scale-105 relative group"
+                  className="text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all duration-300 hover:scale-105 relative group text-sm lg:text-base"
                 >
                   {item}
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 group-hover:w-full transition-all duration-300"></span>
@@ -390,49 +371,54 @@ export default function Portfolio() {
               variant="ghost"
               size="icon"
               onClick={() => setDarkMode(!darkMode)}
-              className="text-gray-700 dark:text-gray-300 hover:scale-110 transition-all duration-300"
+              className="text-gray-700 dark:text-gray-300 hover:scale-110 transition-all duration-300 h-8 w-8 sm:h-10 sm:w-10"
             >
-              {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              {darkMode ? <Sun className="h-4 w-4 sm:h-5 sm:w-5" /> : <Moon className="h-4 w-4 sm:h-5 sm:w-5" />}
             </Button>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section id="home" className="min-h-screen flex items-center justify-center relative z-20">
+      <section
+        id="home"
+        className="min-h-screen flex items-center justify-center relative z-20 pt-24 pb-8 px-4 sm:pt-20 md:pt-16"
+      >
         <div
-          className={`text-center px-4 sm:px-6 lg:px-8 transform transition-all duration-1000 ${isLoaded ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"}`}
+          className={`text-center w-full max-w-6xl mx-auto transform transition-all duration-1000 ${isLoaded ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"}`}
         >
-          <div className="mb-8 relative">
-            <div className="w-48 h-48 mx-auto mb-8 relative group">
-              <LazyImage
+          <div className="mb-6 sm:mb-8 relative">
+            <div className="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 mx-auto mb-6 sm:mb-8 relative group">
+              <Image
                 src="/profile.png"
                 alt="Profile"
                 width={200}
                 height={200}
-                className="rounded-full border-4 border-white dark:border-gray-700 shadow-2xl transition-all duration-500 group-hover:scale-105 group-hover:shadow-3xl object-cover w-full h-full"
+                className="rounded-full border-2 sm:border-4 border-white dark:border-gray-700 shadow-2xl transition-all duration-500 group-hover:scale-105 group-hover:shadow-3xl object-cover w-full h-full"
                 priority={true}
+                placeholder="blur"
+                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
               />
             </div>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold text-gray-900 dark:text-white mb-6 leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6 leading-tight px-2">
             Hi, I'm{" "}
-            <span className="bg-gradient-to-r from-blue-500 via-purple-500 to-green-500 bg-clip-text text-transparent animate-gradient">
+            <span className="bg-gradient-to-r from-blue-500 via-purple-500 to-green-500 bg-clip-text text-transparent animate-gradient block sm:inline mt-2 sm:mt-0">
               Paviter Singh
             </span>
           </h1>
 
-          <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto mb-8 leading-relaxed">
-            Aspiring <span className="text-blue-500 font-semibold">Software Developer</span> with a passion for
-            learning, building, and growing through real-world experience and hands-on projects. Currently seeking a
-            Fall 2025 co-op opportunity to further develop my skills and contribute to impactful software solutions.
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-4xl mx-auto mb-6 sm:mb-8 leading-relaxed px-4">
+            A passionate <span className="text-blue-500 font-semibold">Full-Stack Developer</span> with expertise in
+            modern web technologies. I create beautiful, functional, and user-friendly applications that solve
+            real-world problems.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mb-12 sm:mb-16 px-4">
             <Button
               onClick={() => scrollToSection("about")}
-              className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-8 py-3 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg group"
+              className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-6 sm:px-8 py-3 rounded-full transition-all duration-300 hover:scale-105 hover:shadow-lg group w-full sm:w-auto"
             >
               About me
               <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-300" />
@@ -440,19 +426,18 @@ export default function Portfolio() {
             <Button
               variant="outline"
               onClick={() => scrollToSection("projects")}
-              className="border-2 border-gray-900 dark:border-white text-gray-900 dark:text-white hover:bg-gray-900 hover:text-white dark:hover:bg-white dark:hover:text-gray-900 px-8 py-3 rounded-full transition-all duration-300 hover:scale-105"
+              className="border-2 border-gray-900 dark:border-white text-gray-900 dark:text-white hover:bg-gray-900 hover:text-white dark:hover:bg-white dark:hover:text-gray-900 px-6 sm:px-8 py-3 rounded-full transition-all duration-300 hover:scale-105 w-full sm:w-auto"
             >
               View My Projects
             </Button>
           </div>
 
           <div className="animate-bounce">
-            <ChevronDown className="h-8 w-8 text-gray-400 mx-auto" />
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Scroll</p>
+            <ChevronDown className="h-6 w-6 sm:h-8 sm:w-8 text-gray-400 mx-auto" />
+            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-2">Scroll</p>
           </div>
         </div>
       </section>
-
       {/* About Section */}
       <section id="about" className="py-20 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm relative z-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -482,7 +467,7 @@ export default function Portfolio() {
                 <Button
                   variant="outline"
                   size="icon"
-                  className="hover:scale-110 transition-all duration-300 hover:bg-blue-500 hover:text-white hover:border-blue-500 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 dark:hover:bg-blue-500 dark:hover:text-white dark:hover:border-blue-500"
+                  className="hover:scale-110 transition-all duration-300 hover:bg-blue-500 hover:text-white hover:border-blue-500 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 dark:hover:bg-blue-500 dark:hover:text-white dark:hover:border-blue-500 bg-transparent"
                   onClick={() => window.open("https://github.com/pavitersingh88/", "_blank")}
                 >
                   <Github className="h-5 w-5" />
@@ -490,7 +475,7 @@ export default function Portfolio() {
                 <Button
                   variant="outline"
                   size="icon"
-                  className="hover:scale-110 transition-all duration-300 hover:bg-blue-500 hover:text-white hover:border-blue-500 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 dark:hover:bg-blue-500 dark:hover:text-white dark:hover:border-blue-500"
+                  className="hover:scale-110 transition-all duration-300 hover:bg-blue-500 hover:text-white hover:border-blue-500 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 dark:hover:bg-blue-500 dark:hover:text-white dark:hover:border-blue-500 bg-transparent"
                   onClick={() => window.open("https://linkedin.com/in/pavitersingh88/", "_blank")}
                 >
                   <Linkedin className="h-5 w-5" />
@@ -498,7 +483,7 @@ export default function Portfolio() {
                 <Button
                   variant="outline"
                   size="icon"
-                  className="hover:scale-110 transition-all duration-300 hover:bg-blue-500 hover:text-white hover:border-blue-500 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 dark:hover:bg-blue-500 dark:hover:text-white dark:hover:border-blue-500"
+                  className="hover:scale-110 transition-all duration-300 hover:bg-blue-500 hover:text-white hover:border-blue-500 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 dark:hover:bg-blue-500 dark:hover:text-white dark:hover:border-blue-500 bg-transparent"
                   onClick={() => window.open("mailto:sin16405@sheridancollege.ca", "_blank")}
                 >
                   <Mail className="h-5 w-5" />
@@ -664,12 +649,16 @@ export default function Portfolio() {
                 className="dark:bg-gray-800/50 dark:border-gray-700 backdrop-blur-sm hover:shadow-2xl transition-all duration-500 hover:scale-105 group overflow-hidden flex flex-col h-full"
               >
                 <div className="relative overflow-hidden h-48">
-                  <LazyImage
-                    src={project.image}
+                  <Image
+                    src={project.image  || "/placeholder.svg" }
                     alt={project.title}
                     width={500}
                     height={300}
                     className="w-full h-full object-cover object-top group-hover:scale-110 transition-all duration-500"
+                    priority={index < 3} // Preload first 3 project images
+                    placeholder="blur"
+                    blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+                    loading={index < 3 ? "eager" : "lazy"}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
                 </div>
@@ -702,7 +691,7 @@ export default function Portfolio() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="hover:bg-purple-500 hover:text-white hover:border-purple-500 transition-all duration-300"
+                       className="hover:bg-purple-500 hover:text-white hover:border-purple-500 transition-all duration-300 bg-transparent"
                       onClick={() => window.open(project.github, "_blank")}
                     >
                       <Github className="h-4 w-4 mr-2" />
@@ -711,7 +700,7 @@ export default function Portfolio() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="hover:bg-blue-500 hover:text-white hover:border-blue-500 transition-all duration-300"
+                        className="hover:bg-blue-500 hover:text-white hover:border-blue-500 transition-all duration-300 bg-transparent"
                       onClick={() => window.open(project.demo, "_blank")}
                     >
                       <ExternalLink className="h-4 w-4 mr-2" />
@@ -746,12 +735,15 @@ export default function Portfolio() {
                   <CardContent className="p-8 text-center">
                     <div className="mb-6">
                       <div className="w-20 h-20 mx-auto mb-4 relative">
-                        <LazyImage
-                          src={cert.logo}
+                        <Image
+                          src={cert.logo || "/placeholder.svg"}
                           alt={`${cert.organization} logo`}
                           width={80}
                           height={80}
                           className="w-full h-full object-contain rounded-lg"
+                          loading="lazy"
+                          placeholder="blur"
+                          blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
                         />
                       </div>
                       <Award className="h-8 w-8 text-orange-500 mx-auto mb-4" />
@@ -781,77 +773,131 @@ export default function Portfolio() {
         </div>
       </section>
 
+
       {/* Contact Section */}
       <section id="contact" className="py-20 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm relative z-20">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-              Get In <span className="text-green-500">Touch</span>
+              Let's <span className="text-green-500">Connect</span>
             </h2>
             <div className="w-24 h-1 bg-gradient-to-r from-green-500 to-blue-500 mx-auto rounded-full"></div>
             <p className="mt-6 text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Have a project in mind or want to discuss potential opportunities? I'd love to hear from you!
+              Ready to bring your ideas to life? Let's discuss how we can work together to create something amazing!
             </p>
           </div>
 
-         <div className="max-w-2xl mx-auto">
-            <Card className="dark:bg-gray-800/50 dark:border-gray-700 backdrop-blur-sm hover:shadow-2xl transition-all duration-500">
-              <CardContent className="p-8 text-center">
-                {/* Connect With Me */}
-                <div className="mb-8">
-                  <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">Connect With Me</h3>
+          <div className="grid lg:grid-cols-2 gap-12 items-start">
+            {/* Contact Form */}
+            <div>
+              <Card className="dark:bg-gray-800/50 dark:border-gray-700 backdrop-blur-sm hover:shadow-2xl transition-all duration-500">
+                <CardHeader>
+                  <CardTitle className="text-2xl font-semibold text-gray-900 dark:text-white flex items-center">
+                    <Mail className="h-6 w-6 text-green-500 mr-3" />
+                    Send Me a Message
+                  </CardTitle>
+                  <CardDescription className="text-gray-600 dark:text-gray-300">
+                    Fill out the form below and I'll get back to you within 24 hours.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ContactForm />
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Contact Info & Social Links */}
+            <div className="space-y-8">
+              {/* Contact Information */}
+              <Card className="dark:bg-gray-800/50 dark:border-gray-700 backdrop-blur-sm hover:shadow-xl transition-all duration-500">
+                <CardHeader>
+                  <CardTitle className="text-xl font-semibold text-gray-900 dark:text-white flex items-center">
+                    <MapPin className="h-5 w-5 text-blue-500 mr-2" />
+                    Contact Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
+                      <Mail className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900 dark:text-white">Email</h4>
+                      <p className="text-gray-600 dark:text-gray-300 text-sm">sin16405@sheridancollege.ca</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center">
+                      <MapPin className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900 dark:text-white">Location</h4>
+                      <p className="text-gray-600 dark:text-gray-300 text-sm">Oakville, Ontario, Canada</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Social Media Links */}
+              <Card className="dark:bg-gray-800/50 dark:border-gray-700 backdrop-blur-sm hover:shadow-xl transition-all duration-500">
+                <CardHeader>
+                  <CardTitle className="text-xl font-semibold text-gray-900 dark:text-white flex items-center">
+                    <Star className="h-5 w-5 text-blue-500 mr-2" />
+                    Connect With Me
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
                   <div className="flex justify-center space-x-6">
                     <Button
                       variant="outline"
                       size="lg"
-                      className="rounded-full hover:bg-blue-500 hover:text-white hover:border-blue-500 transition-all duration-300 hover:scale-110 h-14 w-14"
+                      className="rounded-full hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all duration-300 hover:scale-110 h-16 w-16 bg-transparent"
                       onClick={() => window.open("https://linkedin.com/in/pavitersingh88/", "_blank")}
                     >
-                      <Linkedin className="h-6 w-6" />
+                      <Linkedin className="h-7 w-7" />
                     </Button>
                     <Button
                       variant="outline"
                       size="lg"
-                      className="rounded-full hover:bg-gray-800 hover:text-white hover:border-gray-800 transition-all duration-300 hover:scale-110 h-14 w-14"
+                      className="rounded-full hover:bg-gray-800 hover:text-white hover:border-gray-800 transition-all duration-300 hover:scale-110 h-16 w-16 bg-transparent"
                       onClick={() => window.open("https://github.com/pavitersingh88/", "_blank")}
                     >
-                      <Github className="h-6 w-6" />
+                      <Github className="h-7 w-7" />
                     </Button>
                     <Button
                       variant="outline"
                       size="lg"
-                      className="rounded-full hover:bg-green-500 hover:text-white hover:border-green-500 transition-all duration-300 hover:scale-110 h-14 w-14"
+                      className="rounded-full hover:bg-green-500 hover:text-white hover:border-green-500 transition-all duration-300 hover:scale-110 h-16 w-16 bg-transparent"
                       onClick={() => window.open("mailto:sin16405@sheridancollege.ca", "_blank")}
                     >
-                      <Mail className="h-6 w-6" />
+                      <Mail className="h-7 w-7" />
                     </Button>
                   </div>
-                </div>
+                  <p className="text-gray-600 dark:text-gray-300 text-center mt-6 text-sm">
+                    Feel free to reach out through any of these platforms. I'm always open to discussing new
+                    opportunities and interesting projects!
+                  </p>
+                </CardContent>
+              </Card>
 
-                {/* Contact Info */}
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="flex flex-col items-center space-y-3">
-                    <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
-                      <Mail className="h-6 w-6 text-white" />
-                    </div>
-                    <h4 className="font-semibold text-lg text-gray-900 dark:text-white">Email</h4>
-                    <p className="text-gray-600 dark:text-gray-300 text-sm">sin16405@sheridancollege.ca</p>
+              {/* Availability Status */}
+              <Card className="dark:bg-gray-800/50 dark:border-gray-700 backdrop-blur-sm hover:shadow-xl transition-all duration-500 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20">
+                <CardContent className="p-6 text-center">
+                  <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Zap className="h-6 w-6 text-white" />
                   </div>
-
-                  <div className="flex flex-col items-center space-y-3">
-                    <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center">
-                      <MapPin className="h-6 w-6 text-white" />
-                    </div>
-                    <h4 className="font-semibold text-lg text-gray-900 dark:text-white">Location</h4>
-                    <p className="text-gray-600 dark:text-gray-300 text-sm">Oakville, Ontario, Canada</p>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Available for Work</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                    Open to freelance projects and full-time opportunities
+                  </p>
+                  <div className="flex items-center justify-center space-x-2 text-green-600 dark:text-green-400">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="text-xs font-medium">Currently Available</span>
                   </div>
-                </div>
-
-                <p className="text-gray-600 dark:text-gray-300 text-center mt-6">
-                  Feel free to reach out through any of these platforms
-                </p>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </section>
